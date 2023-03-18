@@ -1,0 +1,19 @@
+[package]
+name = "librush"
+version = "0.1.0-a1"
+edition = "2021"
+license = "LGPL-2.1-or-later OR GPL-3.0-or-later"
+
+authors = ["secext2022 <secext2022@outlook.com>"]
+description = "艾刷 (libRush = lib + IBus + Rust + h): 用 rust 编写的 ibus 模块, 不用 GObject (ibus module written in pure rust, without GObject) (输入法, input method)"
+repository = "https://github.com/fm-elpac/librush"
+keywords = ["ibus", "input-method"]
+categories = ["accessibility", "api-bindings", "localization"]
+
+[dependencies]
+zbus = { version = "^3.11.0", default-features = false }
+
+[features]
+default = ["tokio"]
+tokio = ["zbus/tokio"]
+async-io = ["zbus/async-io"]
