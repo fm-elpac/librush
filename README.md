@@ -14,7 +14,7 @@
 用 rust 编写的 ibus 模块, 不用 GObject
 (ibus module written in pure rust, without GObject)
 
-![CI](https://github.com/fm-elpac/librush/actions/workflows/ci/badge.svg)
+![CI](https://github.com/fm-elpac/librush/actions/workflows/ci.yml/badge.svg)
 
 
 **警告**: 目前此项目还无法正常使用 !
