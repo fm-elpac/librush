@@ -60,6 +60,15 @@ TODO
   project type: personal
 
 
+## 贡献 (Contribute)
+
+对此项目的贡献 (提问题, 提交代码等) 尽量在主平台 (github) 进行.
+在镜像平台的贡献很可能会被忽略.
+
+Please contribute (issue, PR, etc.) at the main platform (github).
+The mirrors can be ignored.
+
+
 ## 相关链接 (Links)
 
 + IBus: Intelligent Input Bus for Linux/Unix
