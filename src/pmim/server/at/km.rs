@@ -176,8 +176,11 @@ impl Km {
                 K_A..=K_Z => {
                     捕捉 = true;
                     if 按下 {
-                        // 更新拼音字符串
-                        self.t = format!("{}{}", self.t, char::from_u32(keyval).unwrap());
+                        // 禁用退格的同时, 也禁止输入新的拼音
+                        if !self.禁用退格 {
+                            // 更新拼音字符串
+                            self.t = format!("{}{}", self.t, char::from_u32(keyval).unwrap());
+                        }
                     }
                 }
                 // ESC: 强制退出
