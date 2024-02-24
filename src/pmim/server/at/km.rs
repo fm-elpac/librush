@@ -3,8 +3,8 @@ use log::debug;
 
 use super::super::m::{MSender, Ms, MsT};
 use crate::ibus::{
-    is_keydown, is_special_mask, IBUS_KEY_BACKSPACE, IBUS_KEY_DOWN, IBUS_KEY_ESCAPE, IBUS_KEY_LEFT,
-    IBUS_KEY_RETURN, IBUS_KEY_RIGHT, IBUS_KEY_UP,
+    is_keydown, is_special_mask, IBUS_KEY_BACKSPACE, IBUS_KEY_DELETE, IBUS_KEY_DOWN,
+    IBUS_KEY_ESCAPE, IBUS_KEY_LEFT, IBUS_KEY_RETURN, IBUS_KEY_RIGHT, IBUS_KEY_UP,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -229,7 +229,11 @@ impl Km {
                     捕捉 = true;
                     // 忽略按键
                 }
-
+                // 删除键
+                IBUS_KEY_DELETE => {
+                    捕捉 = true;
+                    // 忽略按键
+                }
                 // 光标按键: 上下左右
                 IBUS_KEY_LEFT | IBUS_KEY_RIGHT | IBUS_KEY_UP | IBUS_KEY_DOWN => {
                     捕捉 = true;

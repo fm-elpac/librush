@@ -108,11 +108,11 @@ impl Pmims {
     }
 }
 
-pub async fn 初始化pmims() -> Result<Pmims, Box<dyn Error>> {
+pub async fn 初始化pmims(flatpak: bool) -> Result<Pmims, Box<dyn Error>> {
     // 启动接收消息 (中转) 任务
     let sr = at_r();
     // 启动给 pmim-server 发送消息的任务
-    let s = at_s(sr.clone())?;
+    let s = at_s(sr.clone(), flatpak)?;
     // 启动按键管理器
     let k = at_k(s.clone());
 

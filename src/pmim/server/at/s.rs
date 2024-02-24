@@ -78,19 +78,30 @@ async fn 连接服务单次(
     }
 }
 
-async fn 任务(ps: String, s: MSender<Ms>, mut r: mpsc::Receiver<Ms>, sr: mpsc::Sender<Mr>) {
+async fn 任务(
+    ps: String,
+    s: MSender<Ms>,
+    mut r: mpsc::Receiver<Ms>,
+    sr: mpsc::Sender<Mr>,
+    flatpak: bool,
+) {
     loop {
         let _ = 连接服务单次(ps.clone(), s.clone(), &mut r, sr.clone()).await;
         // 连接断开
         s.已连接(false);
 
-        debug!("连接断开, 5s 后重试 .. .");
-        sleep(Duration::from_secs(5)).await;
+        // 重新连接之前等待的时间 (秒)
+        let mut w = 2;
+        if flatpak {
+            w = 1;
+        }
+        debug!("连接断开, {}s 后重试 .. .", w);
+        sleep(Duration::from_secs(w)).await;
     }
 }
 
 /// 启动 `AtS` 任务
-pub fn at_s(sr: mpsc::Sender<Mr>) -> Result<MSender<Ms>, Box<dyn Error>> {
+pub fn at_s(sr: mpsc::Sender<Mr>, flatpak: bool) -> Result<MSender<Ms>, Box<dyn Error>> {
     let ps = pmim_us()?;
     info!("{}", ps);
 
@@ -100,7 +111,7 @@ pub fn at_s(sr: mpsc::Sender<Mr>) -> Result<MSender<Ms>, Box<dyn Error>> {
 
     let s1 = s.clone();
     tokio::spawn(async move {
-        任务(ps, s1, rx, sr).await;
+        任务(ps, s1, rx, sr, flatpak).await;
     });
 
     Ok(s)

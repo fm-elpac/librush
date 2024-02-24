@@ -34,6 +34,7 @@ fn 版本() {
 fn main() -> Result<(), ExitCode> {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
+    let mut flatpak = false;
     // 命令行参数处理
     match env::args().skip(1).next() {
         Some(i) => match i.as_str() {
@@ -41,11 +42,14 @@ fn main() -> Result<(), ExitCode> {
                 版本();
                 return Ok(());
             }
+            "--flatpak" => {
+                flatpak = true;
+            }
             _ => {}
         },
         _ => {}
     }
 
-    pmim::main().unwrap();
+    pmim::main(flatpak).unwrap();
     Ok(())
 }

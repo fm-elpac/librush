@@ -78,6 +78,8 @@ pub const IBUS_KEY_BACKSPACE: u32 = 0xff08;
 pub const IBUS_KEY_RETURN: u32 = 0xff0d;
 /// ESC
 pub const IBUS_KEY_ESCAPE: u32 = 0xff1b;
+/// 删除键
+pub const IBUS_KEY_DELETE: u32 = 0xffff;
 /// 方向键: 左
 pub const IBUS_KEY_LEFT: u32 = 0xff51;
 /// 方向键: 上

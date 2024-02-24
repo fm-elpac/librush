@@ -15,7 +15,7 @@ pub use engine::{Engine, IBusEngine};
 pub use error::IBusErr;
 pub use factory::IBusFactory;
 pub use ibus_serde::{
-    is_keydown, is_keyup, is_special_mask, make_ibus_text, IBUS_KEY_BACKSPACE, IBUS_KEY_DOWN,
-    IBUS_KEY_ESCAPE, IBUS_KEY_LEFT, IBUS_KEY_RETURN, IBUS_KEY_RIGHT, IBUS_KEY_UP,
+    is_keydown, is_keyup, is_special_mask, make_ibus_text, IBUS_KEY_BACKSPACE, IBUS_KEY_DELETE,
+    IBUS_KEY_DOWN, IBUS_KEY_ESCAPE, IBUS_KEY_LEFT, IBUS_KEY_RETURN, IBUS_KEY_RIGHT, IBUS_KEY_UP,
     IBUS_RELEASE_MASK,
 };
