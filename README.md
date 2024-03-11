@@ -30,9 +30,16 @@ This project is created for easy use of ibus in rust.
 + <https://docs.rs/librush/>
 
 + 《ibus 源代码阅读 (1)》
-  - <https://blog.csdn.net/secext2022/article/details/136099328>
-  - <https://zhuanlan.zhihu.com/p/682125811>
   - <https://www.bilibili.com/read/cv31187008/>
+  - <https://zhuanlan.zhihu.com/p/682125811>
+  - <https://juejin.cn/post/7343905368621629476>
+  - <https://blog.csdn.net/secext2022/article/details/136099328>
+
++ 《发布 rust 源码包 (crates.io)》
+  - <https://www.bilibili.com/read/cv31910458/>
+  - <https://zhuanlan.zhihu.com/p/683100697>
+  - <https://juejin.cn/post/7343902139821965348>
+  - <https://blog.csdn.net/secext2022/article/details/136201091>
 
 
 ## 国际化 (i18n)
