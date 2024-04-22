@@ -74,6 +74,33 @@ Please contribute (issue, PR, etc.) at the main platform (github).
 The mirrors can be ignored.
 
 
+## 例行更新维护策略 (Release new version policy)
+
+适用于本仓库 (librush). 当下列条件任意一条满足时,
+本仓库的软件需要发布新的维护版本 (版本号 `x.y.z` 其中 `z` + 1). "更新所有依赖"
+并重新编译 (构建):
+
+When any of the following is true, this repo should release a new version
+(version number `x.y.z`, `z` + 1).
+Update all dependencies, and rebuild:
+
+- rustc 发布新版本 (版本号 `x.y.z` 其中 `x` 或 `y` 变化)
+
+  rustc release a new version (version number `x.y.z`, `x` or `y` change)
+
+- 各依赖或本仓库发布重要的安全更新 (修复比较严重的安全漏洞)
+
+  The dependencies or this repo release an important security update.
+
+当前重要依赖的版本号:
+
+Current version number of important dependencies:
+
+- rustc 1.77.2 (25ef9e3d8 2024-04-09)
+
+  <https://github.com/rust-lang/rust>
+
+
 ## 相关链接 (Links)
 
 + IBus: Intelligent Input Bus for Linux/Unix

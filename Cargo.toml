@@ -15,17 +15,17 @@ name="ibrus"
 path="src/bin.rs"
 
 [dependencies]
-log = "^0.4.20"
-serde = "^1.0.197"
-serde_json = "^1.0.114"
-zbus = { version = "^4.1.1", default-features = false }
+log = "^0.4.21"
+serde = "^1.0.198"
+serde_json = "^1.0.116"
+zbus = { version = "^4.1.2", default-features = false }
 
-env_logger = "^0.11.2"
+env_logger = "^0.11.3"
 
-tokio = { version = "^1.36.0", features = ["full"], optional = true }
+tokio = { version = "^1.37.0", features = ["full"], optional = true }
 
 [build-dependencies]
-built = { version = "^0.7.1" }
+built = { version = "^0.7.2" }
 vergen = { version = "^8.3.1", features = ["build", "git", "gitcl"] }
 
 [features]
