@@ -62,12 +62,18 @@ jobs:
     # build rpm (fedora toolbox rpm-build)
     - run: sudo apt-get -y install podman-toolbox
     - run: toolbox create -y -d fedora -r 39
+      env:
+        SHELL: /usr/bin/bash
     - run: |
         toolbox run -c fedora-toolbox-39 \
         sudo dnf install -y rpm-build rpm-devel rpmdevtools
+      env:
+        SHELL: /usr/bin/bash
     - run: |
         toolbox run -c fedora-toolbox-39 \
         rpmdev-setuptree
+      env:
+        SHELL: /usr/bin/bash
     - run: |
         cp rpm/ibrus.spec ~/rpmbuild/SPECS/ && \
         cp aur/pmim_ibrus.xml ~/rpmbuild/SOURCES/ && \
@@ -75,6 +81,8 @@ jobs:
     - run: |
         toolbox run -c fedora-toolbox-39 \
         rpmbuild -bb ~/rpmbuild/SPECS/ibrus.spec
+      env:
+        SHELL: /usr/bin/bash
 
     - uses: actions/upload-artifact@v4
       with:
