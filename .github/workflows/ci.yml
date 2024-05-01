@@ -61,6 +61,38 @@ jobs:
 
     # build rpm (fedora toolbox rpm-build)
     - run: sudo apt-get -y install podman-toolbox
+    # Fedora 40
+    - run: toolbox create -y -d fedora -r 40
+      env:
+        SHELL: /usr/bin/bash
+    - run: |
+        toolbox run -c fedora-toolbox-40 \
+        sudo dnf install -y rpm-build rpm-devel rpmdevtools
+      env:
+        SHELL: /usr/bin/bash
+    - run: |
+        toolbox run -c fedora-toolbox-40 \
+        rpmdev-setuptree
+      env:
+        SHELL: /usr/bin/bash
+    # copy files
+    - run: |
+        cp rpm/ibrus.spec ~/rpmbuild/SPECS/ && \
+        cp aur/pmim_ibrus.xml ~/rpmbuild/SOURCES/ && \
+        cp target/release/ibrus ~/rpmbuild/SOURCES/
+    # build rpm
+    - run: |
+        toolbox run -c fedora-toolbox-40 \
+        rpmbuild -bb ~/rpmbuild/SPECS/ibrus.spec
+      env:
+        SHELL: /usr/bin/bash
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ibrus-0.1.0a3-1.fc40.x86_64.rpm
+        path: ~/rpmbuild/RPMS/x86_64/ibrus-0.1.0a3-1.fc40.x86_64.rpm
+
+    # Fedora 39
     - run: toolbox create -y -d fedora -r 39
       env:
         SHELL: /usr/bin/bash
@@ -69,15 +101,6 @@ jobs:
         sudo dnf install -y rpm-build rpm-devel rpmdevtools
       env:
         SHELL: /usr/bin/bash
-    - run: |
-        toolbox run -c fedora-toolbox-39 \
-        rpmdev-setuptree
-      env:
-        SHELL: /usr/bin/bash
-    - run: |
-        cp rpm/ibrus.spec ~/rpmbuild/SPECS/ && \
-        cp aur/pmim_ibrus.xml ~/rpmbuild/SOURCES/ && \
-        cp target/release/ibrus ~/rpmbuild/SOURCES/
     - run: |
         toolbox run -c fedora-toolbox-39 \
         rpmbuild -bb ~/rpmbuild/SPECS/ibrus.spec
