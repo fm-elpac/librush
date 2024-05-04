@@ -96,7 +96,7 @@ Update all dependencies, and rebuild:
 
 Current version number of important dependencies:
 
-- rustc 1.77.2 (25ef9e3d8 2024-04-09)
+- rustc 1.78.0 (9b00956e5 2024-04-29)
 
   <https://github.com/rust-lang/rust>
 
