@@ -89,8 +89,8 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: ibrus-0.1.0a3-1.fc40.x86_64.rpm
-        path: ~/rpmbuild/RPMS/x86_64/ibrus-0.1.0a3-1.fc40.x86_64.rpm
+        name: ibrus-0.1.0a4-1.fc40.x86_64.rpm
+        path: ~/rpmbuild/RPMS/x86_64/ibrus-0.1.0a4-1.fc40.x86_64.rpm
 
     # Fedora 39
     - run: toolbox create -y -d fedora -r 39
@@ -109,5 +109,5 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: ibrus-0.1.0a3-1.fc39.x86_64.rpm
-        path: ~/rpmbuild/RPMS/x86_64/ibrus-0.1.0a3-1.fc39.x86_64.rpm
+        name: ibrus-0.1.0a4-1.fc39.x86_64.rpm
+        path: ~/rpmbuild/RPMS/x86_64/ibrus-0.1.0a4-1.fc39.x86_64.rpm
