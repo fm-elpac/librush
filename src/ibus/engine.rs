@@ -58,6 +58,49 @@ pub trait IBusEngine: Send + Sync {
     fn disable(&mut self, _sc: SignalContext<'_>) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
+
+    /// Emitted when a candidate on a lookup table is clicked
+    ///
+    /// _index is the 0-based index of the clicked candiate *in the current page*, not in the full
+    /// lookup table
+    fn candidate_clicked(
+        &mut self,
+        _sc: SignalContext<'_>,
+        _index: u32,
+        _button: u32,
+        _state: u32,
+    ) -> impl Future<Output = fdo::Result<()>> + Send {
+        async { Ok(()) }
+    }
+
+    /// Emitted when the "previous page" button is clicked on a lookup table
+    fn page_up(&mut self, _sc: SignalContext<'_>) -> impl Future<Output = fdo::Result<()>> + Send {
+        async { Ok(()) }
+    }
+
+    /// Emitted when the "next page" button is clicked on a lookup table
+    fn page_down(
+        &mut self,
+        _sc: SignalContext<'_>,
+    ) -> impl Future<Output = fdo::Result<()>> + Send {
+        async { Ok(()) }
+    }
+
+    /// Emmitted when the user scrolls up (with the mouse wheel) on a lookup table
+    fn cursor_up(
+        &mut self,
+        _sc: SignalContext<'_>,
+    ) -> impl Future<Output = fdo::Result<()>> + Send {
+        async { Ok(()) }
+    }
+
+    /// Emmitted when the user scrolls down (with the mouse wheel) on a lookup table
+    fn cursor_down(
+        &mut self,
+        _sc: SignalContext<'_>,
+    ) -> impl Future<Output = fdo::Result<()>> + Send {
+        async { Ok(()) }
+    }
 }
 
 /// D-Bus interface: `org.freedesktop.IBus.Engine`
@@ -231,8 +274,14 @@ impl<T: IBusEngine + 'static> Engine<T> {
     }
 
     // 忽略 (用户界面相关)
-    fn candidate_clicked(&mut self, _index: u32, _button: u32, _state: u32) -> fdo::Result<()> {
-        Ok(())
+    async fn candidate_clicked(
+        &mut self,
+        #[zbus(signal_context)] sc: SignalContext<'_>,
+        index: u32,
+        button: u32,
+        state: u32,
+    ) -> fdo::Result<()> {
+        self.e.candidate_clicked(sc, index, button, state).await
     }
 
     async fn focus_in(&mut self, #[zbus(signal_context)] sc: SignalContext<'_>) -> fdo::Result<()> {
@@ -268,24 +317,33 @@ impl<T: IBusEngine + 'static> Engine<T> {
         self.e.disable(sc).await
     }
 
-    // 忽略 (用户界面相关)
-    fn page_up(&mut self) -> fdo::Result<()> {
-        Ok(())
+    /// Emitted when the page-up button is pressed.
+    async fn page_up(&mut self, #[zbus(signal_context)] sc: SignalContext<'_>) -> fdo::Result<()> {
+        self.e.page_up(sc).await
     }
 
-    // 忽略 (用户界面相关)
-    fn page_down(&mut self) -> fdo::Result<()> {
-        Ok(())
+    /// Emitted when the page-down button is pressed
+    async fn page_down(
+        &mut self,
+        #[zbus(signal_context)] sc: SignalContext<'_>,
+    ) -> fdo::Result<()> {
+        self.e.page_down(sc).await
     }
 
-    // 忽略 (用户界面相关)
-    fn cursor_up(&mut self) -> fdo::Result<()> {
-        Ok(())
+    /// Emitted when the up cursor button is pressed.
+    async fn cursor_up(
+        &mut self,
+        #[zbus(signal_context)] sc: SignalContext<'_>,
+    ) -> fdo::Result<()> {
+        self.e.cursor_up(sc).await
     }
 
-    // 忽略 (用户界面相关)
-    fn cursor_down(&mut self) -> fdo::Result<()> {
-        Ok(())
+    /// Emitted when the down cursor button is pressed
+    async fn cursor_down(
+        &mut self,
+        #[zbus(signal_context)] sc: SignalContext<'_>,
+    ) -> fdo::Result<()> {
+        self.e.cursor_down(sc).await
     }
 
     // 忽略
@@ -331,7 +389,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
 
     // 忽略 (用户界面相关)
     #[zbus(signal)]
-    async fn update_lookup_table(
+    pub async fn update_lookup_table(
         sc: &SignalContext<'_>,
         table: Value<'_>,
         visible: bool,

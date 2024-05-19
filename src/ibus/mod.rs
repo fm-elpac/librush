@@ -8,6 +8,7 @@ mod error;
 mod factory;
 mod ibus_serde;
 mod init;
+mod lookup_table;
 
 pub use addr::get_ibus_addr;
 pub use bus::IBus;
@@ -19,3 +20,4 @@ pub use ibus_serde::{
     IBUS_KEY_DOWN, IBUS_KEY_ESCAPE, IBUS_KEY_LEFT, IBUS_KEY_RETURN, IBUS_KEY_RIGHT, IBUS_KEY_UP,
     IBUS_RELEASE_MASK,
 };
+pub use lookup_table::LookupTable;
