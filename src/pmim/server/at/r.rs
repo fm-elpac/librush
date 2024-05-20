@@ -4,7 +4,7 @@ use zbus::SignalContext;
 
 use super::super::super::engine::PmimEngine;
 use super::super::m::{Mk, Mr};
-use crate::ibus::{make_ibus_text, Engine};
+use crate::ibus::IBusEngineBackend;
 
 async fn 任务(mut r: mpsc::Receiver<Mr>) {
     // 按键管理器 消息发送端
@@ -19,10 +19,8 @@ async fn 任务(mut r: mpsc::Receiver<Mr>) {
                 // 提交文本 (CommitText)
                 Mr::T(t) => {
                     if let Some(sc) = &sc {
-                        // 调用 IBusEngine 接口
-                        let text = make_ibus_text(t.0);
                         // 忽略错误
-                        let _ = Engine::<PmimEngine>::commit_text(sc, text).await;
+                        let _ = PmimEngine::commit_text(sc, t.0).await;
                     }
                     // 忽略
                 }

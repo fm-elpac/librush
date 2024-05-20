@@ -1,3 +1,4 @@
+use xkeysym::{KeyCode, Keysym};
 use zbus::{fdo, SignalContext};
 
 use super::server::Pmims;
@@ -18,11 +19,13 @@ impl IBusEngine for PmimEngine {
     async fn process_key_event(
         &mut self,
         sc: SignalContext<'_>,
-        keyval: u32,
-        keycode: u32,
+        keyval: Keysym,
+        keycode: KeyCode,
         state: u32,
     ) -> fdo::Result<bool> {
-        self.s.process_key_event(sc, keyval, keycode, state).await
+        self.s
+            .process_key_event(sc, keyval.into(), keycode.into(), state)
+            .await
     }
 
     async fn set_cursor_location(

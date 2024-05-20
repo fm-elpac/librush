@@ -70,25 +70,6 @@ pub const IBUS_HYPER_MASK: u32 = 1 << 27;
 /// meta 键
 pub const IBUS_META_MASK: u32 = 1 << 28;
 
-// 源文件: `ibus/src/ibuskeysyms.h`
-
-/// 退格键
-pub const IBUS_KEY_BACKSPACE: u32 = 0xff08;
-/// 回车键
-pub const IBUS_KEY_RETURN: u32 = 0xff0d;
-/// ESC
-pub const IBUS_KEY_ESCAPE: u32 = 0xff1b;
-/// 删除键
-pub const IBUS_KEY_DELETE: u32 = 0xffff;
-/// 方向键: 左
-pub const IBUS_KEY_LEFT: u32 = 0xff51;
-/// 方向键: 上
-pub const IBUS_KEY_UP: u32 = 0xff52;
-/// 方向键: 右
-pub const IBUS_KEY_RIGHT: u32 = 0xff53;
-/// 方向键: 下
-pub const IBUS_KEY_DOWN: u32 = 0xff54;
-
 /// 检查按键消息: 是否为按下按键
 pub fn is_keydown(state: u32) -> bool {
     !is_keyup(state)

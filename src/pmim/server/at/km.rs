@@ -1,11 +1,9 @@
 //! 按键管理器
 use log::debug;
+use xkeysym::key;
 
 use super::super::m::{MSender, Ms, MsT};
-use crate::ibus::{
-    is_keydown, is_special_mask, IBUS_KEY_BACKSPACE, IBUS_KEY_DELETE, IBUS_KEY_DOWN,
-    IBUS_KEY_ESCAPE, IBUS_KEY_LEFT, IBUS_KEY_RETURN, IBUS_KEY_RIGHT, IBUS_KEY_UP,
-};
+use crate::ibus::{is_keydown, is_special_mask};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum 输入状态 {
@@ -33,13 +31,6 @@ pub struct Km {
 }
 
 // 按键 b'' as u32 定义
-const K_A: u32 = b'a' as u32;
-const K_Z: u32 = b'z' as u32;
-const K_A1: u32 = b'A' as u32;
-const K_Z1: u32 = b'Z' as u32;
-const K_0: u32 = b'0' as u32;
-const K_9: u32 = b'9' as u32;
-const KS: u32 = b' ' as u32;
 const KC1: u32 = b'`' as u32;
 const KC2: u32 = b'~' as u32;
 const KC3: u32 = b'!' as u32;
@@ -154,7 +145,7 @@ impl Km {
                 if 按下 {
                     match keyval {
                         // `a` ~ `z`
-                        K_A..=K_Z => {
+                        key::a..=key::z => {
                             // 如果特殊按键同时按下 (Shift, Ctrl, Alt, Super 等)
                             // 忽略按键
                             if !is_special_mask(state) {
@@ -173,7 +164,7 @@ impl Km {
             输入状态::拼音 => match keyval {
                 // 捕捉所有相关按键
                 // `a` ~ `z`
-                K_A..=K_Z => {
+                key::a..=key::z => {
                     捕捉 = true;
                     if 按下 {
                         // 禁用退格的同时, 也禁止输入新的拼音
@@ -184,14 +175,14 @@ impl Km {
                     }
                 }
                 // ESC: 强制退出
-                IBUS_KEY_ESCAPE => {
+                key::Escape => {
                     捕捉 = true;
                     if 按下 {
                         self.清理(false).await;
                     }
                 }
                 // `0` ~ `9`, 空格, Enter
-                K_0..=K_9 | KS | IBUS_KEY_RETURN => {
+                key::_0..=key::_9 | key::space | key::Return => {
                     捕捉 = true;
                     // 如果启用了输入反馈, 忽略按键
                     if 按下 && (!self.ef) {
@@ -202,7 +193,7 @@ impl Km {
                     }
                 }
                 // 退格 (backspace)
-                IBUS_KEY_BACKSPACE => {
+                key::BackSpace => {
                     捕捉 = true;
                     // 如果禁用了退格键, 忽略按键
                     if 按下 && (!self.禁用退格) {
@@ -218,7 +209,7 @@ impl Km {
                     }
                 }
                 // `A` ~ `Z`
-                K_A1..=K_Z1 => {
+                key::A..=key::A => {
                     捕捉 = true;
                     // 忽略按键
                 }
@@ -230,12 +221,12 @@ impl Km {
                     // 忽略按键
                 }
                 // 删除键
-                IBUS_KEY_DELETE => {
+                key::Delete => {
                     捕捉 = true;
                     // 忽略按键
                 }
                 // 光标按键: 上下左右
-                IBUS_KEY_LEFT | IBUS_KEY_RIGHT | IBUS_KEY_UP | IBUS_KEY_DOWN => {
+                key::Left | key::Right | key::Up | key::Down => {
                     捕捉 = true;
                     // 忽略按键
                     debug!("光标: 上下左右");
