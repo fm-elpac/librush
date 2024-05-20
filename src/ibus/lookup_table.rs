@@ -99,7 +99,11 @@ impl LookupTable {
     #[inline]
     pub fn set_cursor_pos(&mut self, desired_pos: i64) {
         if self.round {
-            self.cursor_pos = desired_pos.rem_euclid(self.candidates.len() as i64) as u32
+            if self.candidates.is_empty() {
+                self.cursor_pos = 0
+            } else {
+                self.cursor_pos = desired_pos.rem_euclid(self.candidates.len() as i64) as u32
+            }
         } else if desired_pos < 0 {
             self.cursor_pos = 0
         } else if desired_pos >= self.candidates.len() as i64 {
@@ -328,6 +332,12 @@ fn page_up_wrap() {
     assert_eq!(table.cursor_pos(), 1);
     table.page_up();
     assert_eq!(table.cursor_pos(), 3);
+}
+#[test]
+fn page_up_wrap_empty() {
+    let mut table = LookupTable::new(vec![], 2, false, true).unwrap();
+    table.page_up();
+    assert_eq!(table.cursor_pos(), 0);
 }
 #[test]
 fn page_down_nominal() {
