@@ -2,7 +2,7 @@ use xkeysym::{KeyCode, Keysym};
 use zbus::{fdo, SignalContext};
 
 use super::server::Pmims;
-use crate::ibus::{IBusEngine, IBusFactory};
+use crate::ibus::{IBusEngine, IBusFactory, IBusModifierState};
 
 #[derive(Debug, Clone)]
 pub struct PmimEngine {
@@ -21,10 +21,10 @@ impl IBusEngine for PmimEngine {
         sc: SignalContext<'_>,
         keyval: Keysym,
         keycode: KeyCode,
-        state: u32,
+        state: IBusModifierState,
     ) -> fdo::Result<bool> {
         self.s
-            .process_key_event(sc, keyval.into(), keycode.into(), state)
+            .process_key_event(sc, keyval.into(), keycode.into(), state.raw_value())
             .await
     }
 

@@ -1,3 +1,5 @@
+use arbitrary_int::u11;
+use bitbybit::bitfield;
 use zbus::zvariant::{Array, Signature, Structure, Value};
 
 // 源文件: `ibus/src/ibustext.c`
@@ -49,51 +51,95 @@ pub fn make_ibus_text(text: String) -> Value<'static> {
     Value::new(st2)
 }
 
-// ibus 按键定义
-
 // 源文件: `ibus/src/ibustypes.h`
-
-/// 这个标志位表示按键释放 (松开) 消息
-pub const IBUS_RELEASE_MASK: u32 = 1 << 30;
-/// shift 键
-pub const IBUS_SHIFT_MASK: u32 = 1 << 0;
-/// ctrl 键
-pub const IBUS_CONTROL_MASK: u32 = 1 << 2;
-/// Alt 键, Meta_L 键
-pub const IBUS_MOD1_MASK: u32 = 1 << 3;
-/// Super_L 键, Hyper_L 键
-pub const IBUS_MOD4_MASK: u32 = 1 << 6;
-/// super (win) 键
-pub const IBUS_SUPER_MASK: u32 = 1 << 26;
-/// hyper 键
-pub const IBUS_HYPER_MASK: u32 = 1 << 27;
-/// meta 键
-pub const IBUS_META_MASK: u32 = 1 << 28;
-
-/// 检查按键消息: 是否为按下按键
-pub fn is_keydown(state: u32) -> bool {
-    !is_keyup(state)
+#[bitfield(u32)]
+pub struct IBusModifierState {
+    /// `IBUS_SHIFT_MASK`: Shift  is activated.
+    #[bit(0, rw)]
+    shift: bool,
+    /// `IBUS_LOCK_MASK`: Cap Lock is locked.
+    #[bit(1, rw)]
+    lock: bool,
+    /// `IBUS_CONTROL_MASK`: Control key is activated.
+    #[bit(2, rw)]
+    control: bool,
+    /// `IBUS_MOD1_MASK`: Modifier 1 (Usually Alt_L (0x40),  Alt_R (0x6c),  Meta_L (0xcd)) activated.
+    #[bit(3, rw)]
+    mod1: bool,
+    /// `IBUS_MOD2_MASK`: Modifier 2 (Usually Num_Lock (0x4d)) activated.
+    #[bit(4, rw)]
+    mod2: bool,
+    /// `IBUS_MOD3_MASK`: Modifier 3 activated.
+    #[bit(5, rw)]
+    mod3: bool,
+    /// `IBUS_MOD4_MASK`: Modifier 4 (Usually Super_L (0xce),  Hyper_L (0xcf)) activated.
+    #[bit(6, rw)]
+    mod4: bool,
+    /// `IBUS_MOD5_MASK`: Modifier 5 (ISO_Level3_Shift (0x5c),  Mode_switch (0xcb)) activated.
+    #[bit(7, rw)]
+    mod5: bool,
+    /// `IBUS_BUTTON1_MASK`: Mouse button 1 (left) is activated.
+    #[bit(8, rw)]
+    button1: bool,
+    /// `IBUS_BUTTON2_MASK`: Mouse button 2 (middle) is activated.
+    #[bit(9, rw)]
+    button2: bool,
+    /// `IBUS_BUTTON3_MASK`: Mouse button 3 (right) is activated.
+    #[bit(10, rw)]
+    button3: bool,
+    /// `IBUS_BUTTON4_MASK`: Mouse button 4 (scroll up) is activated.
+    #[bit(11, rw)]
+    button4: bool,
+    /// `IBUS_BUTTON5_MASK`: Mouse button 5 (scroll down) is activated.
+    #[bit(12, rw)]
+    button5: bool,
+    #[bits(13..=23, rw)]
+    unused1: u11,
+    /// `IBUS_HANDLED_MASK`: Handled mask indicates the event has been handled by ibus.
+    #[bit(24, rw)]
+    handled: bool,
+    /// `IBUS_FORWARD_MASK`: Forward mask indicates the event has been forward from ibus.
+    #[bit(25, rw)]
+    forward: bool,
+    /// `IBUS_SUPER_MASK`: Super (Usually Win) key is activated.
+    #[bit(26, rw)]
+    super_: bool,
+    /// `IBUS_HYPER_MASK`: Hyper key is activated.
+    #[bit(27, rw)]
+    hyper: bool,
+    /// `IBUS_META_MASK`: Meta key is activated.
+    #[bit(28, rw)]
+    meta: bool,
+    #[bit(29, rw)]
+    unused2: bool,
+    /// `IBUS_RELEASE_MASK`: Key is released.
+    #[bit(30, rw)]
+    release: bool,
+    #[bit(31, rw)]
+    unused3: bool,
 }
 
-/// 检查按键消息: 是否为松开按键
-pub fn is_keyup(state: u32) -> bool {
-    (state & IBUS_RELEASE_MASK) != 0
-}
+impl IBusModifierState {
+    /// True when modifiers are pressed which indicate that this keypress is keybinding and would
+    /// typically not be used to type text.
+    ///
+    /// Modifiers considered:
+    /// - control
+    /// - mod1
+    /// - mod4
+    /// - super
+    /// - hyper
+    pub fn has_special_modifiers(self) -> bool {
+        self.control() || self.mod1() || self.mod4() || self.super_() || self.meta() || self.hyper()
+    }
 
-/// 检查按键消息: 特殊组合键是否被按下
-///
-/// 包括: Shift, Ctrl, Alt, Super 等
-pub fn is_special_mask(state: u32) -> bool {
-    if ((state & IBUS_SHIFT_MASK) != 0)
-        || ((state & IBUS_CONTROL_MASK) != 0)
-        || ((state & IBUS_MOD1_MASK) != 0)
-        || ((state & IBUS_MOD4_MASK) != 0)
-        || ((state & IBUS_SUPER_MASK) != 0)
-        || ((state & IBUS_HYPER_MASK) != 0)
-        || ((state & IBUS_META_MASK) != 0)
-    {
-        true
-    } else {
-        false
+    // True when this keyboard event is caused by releasing a key, not pressing it
+    pub fn is_keyup(self) -> bool {
+        self.release()
+    }
+
+    // True when this keyboard event is caused by pressing a key, not releasing it
+    pub fn is_keydown(self) -> bool {
+        !self.is_keyup()
     }
 }

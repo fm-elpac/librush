@@ -2,8 +2,9 @@
 use log::debug;
 use xkeysym::key;
 
+use crate::ibus::IBusModifierState;
+
 use super::super::m::{MSender, Ms, MsT};
-use crate::ibus::{is_keydown, is_special_mask};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum 输入状态 {
@@ -131,13 +132,14 @@ impl Km {
     }
 
     pub async fn process_key_event(&mut self, keyval: u32, _keycode: u32, state: u32) -> bool {
+        let state = IBusModifierState::new_with_raw_value(state);
         // 禁用按键捕捉
         if self.禁用 {
             return false;
         }
 
         let mut 捕捉 = false;
-        let 按下 = is_keydown(state);
+        let 按下 = state.is_keydown();
 
         match self.状态 {
             输入状态::默认 => {
@@ -148,7 +150,7 @@ impl Km {
                         key::a..=key::z => {
                             // 如果特殊按键同时按下 (Shift, Ctrl, Alt, Super 等)
                             // 忽略按键
-                            if !is_special_mask(state) {
+                            if !(state.has_special_modifiers() || state.shift()) {
                                 捕捉 = true;
                                 // 进入拼音状态
                                 self.状态 = 输入状态::拼音;

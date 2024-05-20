@@ -7,7 +7,7 @@ use log::info;
 use xkeysym::{KeyCode, Keysym};
 use zbus::{fdo, interface, zvariant::Value, Connection, SignalContext};
 
-use super::{ibus_serde::make_ibus_text, LookupTable};
+use super::{ibus_serde::make_ibus_text, IBusModifierState, LookupTable};
 
 /// Implement this trait to implement an input method
 ///
@@ -20,7 +20,7 @@ pub trait IBusEngine: Send + Sync {
         _sc: SignalContext<'_>,
         _keyval: Keysym,
         _keycode: KeyCode,
-        _state: u32,
+        _state: IBusModifierState,
     ) -> impl Future<Output = fdo::Result<bool>> + Send {
         async { Ok(false) }
     }
@@ -327,7 +327,12 @@ impl<T: IBusEngine + 'static> Engine<T> {
         // Note: ibuskeysyms-update.pl indicates that IBUS_KEY_* constants are the same as XK_
         // constants provided by xkeysym
         self.e
-            .process_key_event(sc, keyval.into(), keycode.into(), state)
+            .process_key_event(
+                sc,
+                keyval.into(),
+                keycode.into(),
+                IBusModifierState::new_with_raw_value(state),
+            )
             .await
     }
 
