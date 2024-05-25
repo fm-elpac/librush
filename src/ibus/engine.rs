@@ -59,7 +59,7 @@ pub trait IBusEngine: Send + Sync {
         async { Ok(()) }
     }
 
-    /// Emitted when a candidate on a lookup table is clicked
+    /// (UI) Emitted when a candidate on a lookup table is clicked
     ///
     /// _index is the 0-based index of the clicked candiate *in the current page*, not in the full
     /// lookup table
@@ -73,12 +73,12 @@ pub trait IBusEngine: Send + Sync {
         async { Ok(()) }
     }
 
-    /// Emitted when the "previous page" button is clicked on a lookup table
+    /// (UI) Emitted when the "previous page" button is clicked on a lookup table
     fn page_up(&mut self, _sc: SignalContext<'_>) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
 
-    /// Emitted when the "next page" button is clicked on a lookup table
+    /// (UI) Emitted when the "next page" button is clicked on a lookup table
     fn page_down(
         &mut self,
         _sc: SignalContext<'_>,
@@ -86,7 +86,7 @@ pub trait IBusEngine: Send + Sync {
         async { Ok(()) }
     }
 
-    /// Emmitted when the user scrolls up (with the mouse wheel) on a lookup table
+    /// (UI) Emmitted when the user scrolls up (with the mouse wheel) on a lookup table
     fn cursor_up(
         &mut self,
         _sc: SignalContext<'_>,
@@ -94,7 +94,7 @@ pub trait IBusEngine: Send + Sync {
         async { Ok(()) }
     }
 
-    /// Emmitted when the user scrolls down (with the mouse wheel) on a lookup table
+    /// (UI) Emmitted when the user scrolls down (with the mouse wheel) on a lookup table
     fn cursor_down(
         &mut self,
         _sc: SignalContext<'_>,
@@ -273,7 +273,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
         Ok(())
     }
 
-    // 忽略 (用户界面相关)
+    // (UI)
     async fn candidate_clicked(
         &mut self,
         #[zbus(signal_context)] sc: SignalContext<'_>,
@@ -317,12 +317,12 @@ impl<T: IBusEngine + 'static> Engine<T> {
         self.e.disable(sc).await
     }
 
-    /// Emitted when the page-up button is pressed.
+    /// (UI) Emitted when the page-up button is pressed.
     async fn page_up(&mut self, #[zbus(signal_context)] sc: SignalContext<'_>) -> fdo::Result<()> {
         self.e.page_up(sc).await
     }
 
-    /// Emitted when the page-down button is pressed
+    /// (UI) Emitted when the page-down button is pressed
     async fn page_down(
         &mut self,
         #[zbus(signal_context)] sc: SignalContext<'_>,
@@ -330,7 +330,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
         self.e.page_down(sc).await
     }
 
-    /// Emitted when the up cursor button is pressed.
+    /// (UI) Emitted when the up cursor button is pressed.
     async fn cursor_up(
         &mut self,
         #[zbus(signal_context)] sc: SignalContext<'_>,
@@ -338,7 +338,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
         self.e.cursor_up(sc).await
     }
 
-    /// Emitted when the down cursor button is pressed
+    /// (UI) Emitted when the down cursor button is pressed
     async fn cursor_down(
         &mut self,
         #[zbus(signal_context)] sc: SignalContext<'_>,
@@ -387,7 +387,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
         visible: bool,
     ) -> zbus::Result<()>;
 
-    // 忽略 (用户界面相关)
+    // (UI)
     #[zbus(signal)]
     pub async fn update_lookup_table(
         sc: &SignalContext<'_>,
