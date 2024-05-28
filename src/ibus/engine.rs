@@ -14,7 +14,18 @@ use super::{ibus_serde::make_ibus_text, IBusModifierState, LookupTable};
 /// Your implementation can use the methods of the [`IBusEngineBackend`]
 /// to display text to the user.
 pub trait IBusEngine: Send + Sync {
-    /// 键盘按键消息
+    /// A key was pressed or released.
+    ///
+    /// `keyval` encodes the symbol of the key interpreted according to the current keyboard layout.
+    ///
+    /// `keycode` encodes the position of the key on the keyboard, which is independent of the
+    /// keyboard layout.
+    ///
+    /// state encodes wether the key was pressed or released, and modifiers (shift, control...).
+    ///
+    /// Note that when `shift+a` is pressed, `keyval` will be `Keysym::A` (instead of `Keysym::a`).
+    /// `state.shift()` will still be `true`. Same applies for `AltGr` in keyboard layouts which
+    /// have it.
     fn process_key_event(
         &mut self,
         _sc: SignalContext<'_>,
