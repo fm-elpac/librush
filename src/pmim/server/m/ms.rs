@@ -1,6 +1,6 @@
 use serde_json::Value;
 
-use crate::ibus::is_keydown;
+use crate::ibus::IBusModifierState;
 
 const MS_S: &'static str = "S";
 const MS_K: &'static str = "K";
@@ -64,7 +64,11 @@ pub struct MsK(pub Vec<u32>);
 
 impl MsK {
     pub fn new(keyval: u32, keycode: u32, state: u32) -> Self {
-        let kd = if is_keydown(state) { 1 } else { 0 };
+        let kd = if IBusModifierState::new_with_raw_value(state).is_keydown() {
+            1
+        } else {
+            0
+        };
         Self(vec![keyval, keycode, state, kd])
     }
 }

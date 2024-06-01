@@ -1,7 +1,8 @@
+use xkeysym::{KeyCode, Keysym};
 use zbus::{fdo, SignalContext};
 
 use super::server::Pmims;
-use crate::ibus::{IBusEngine, IBusFactory};
+use crate::ibus::{IBusEngine, IBusFactory, IBusModifierState};
 
 #[derive(Debug, Clone)]
 pub struct PmimEngine {
@@ -18,11 +19,13 @@ impl IBusEngine for PmimEngine {
     async fn process_key_event(
         &mut self,
         sc: SignalContext<'_>,
-        keyval: u32,
-        keycode: u32,
-        state: u32,
+        keyval: Keysym,
+        keycode: KeyCode,
+        state: IBusModifierState,
     ) -> fdo::Result<bool> {
-        self.s.process_key_event(sc, keyval, keycode, state).await
+        self.s
+            .process_key_event(sc, keyval.into(), keycode.into(), state.raw_value())
+            .await
     }
 
     async fn set_cursor_location(

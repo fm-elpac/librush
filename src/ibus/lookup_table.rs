@@ -1,6 +1,6 @@
 use zbus::zvariant::{Array, Signature, Structure, Value};
 
-use super::make_ibus_text;
+use super::ibus_serde::make_ibus_text;
 
 #[derive(Debug, Copy, Clone)]
 pub enum IBusOrientation {
@@ -65,7 +65,7 @@ impl LookupTable {
         })
     }
 
-    pub fn serialize(&self) -> Value<'static> {
+    pub(crate) fn serialize(&self) -> Value<'static> {
         let special = Array::new(Signature::from_str_unchecked("{sv}"));
         let candidates: Array = self
             .candidates

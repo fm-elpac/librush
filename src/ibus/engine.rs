@@ -4,17 +4,34 @@ use std::future::Future;
 use std::marker::Send;
 
 use log::info;
+use xkeysym::{KeyCode, Keysym};
 use zbus::{fdo, interface, zvariant::Value, Connection, SignalContext};
 
-/// Implement this trait to implement a input method
+use super::{ibus_serde::make_ibus_text, IBusModifierState, LookupTable};
+
+/// Implement this trait to implement an input method
+///
+/// Your implementation can use the methods of the [`IBusEngineBackend`]
+/// to display text to the user.
 pub trait IBusEngine: Send + Sync {
-    /// 键盘按键消息
+    /// A key was pressed or released.
+    ///
+    /// `keyval` encodes the symbol of the key interpreted according to the current keyboard layout.
+    ///
+    /// `keycode` encodes the position of the key on the keyboard, which is independent of the
+    /// keyboard layout.
+    ///
+    /// state encodes wether the key was pressed or released, and modifiers (shift, control...).
+    ///
+    /// Note that when `shift+a` is pressed, `keyval` will be `Keysym::A` (instead of `Keysym::a`).
+    /// `state.shift()` will still be `true`. Same applies for `AltGr` in keyboard layouts which
+    /// have it.
     fn process_key_event(
         &mut self,
         _sc: SignalContext<'_>,
-        _keyval: u32,
-        _keycode: u32,
-        _state: u32,
+        _keyval: Keysym,
+        _keycode: KeyCode,
+        _state: IBusModifierState,
     ) -> impl Future<Output = fdo::Result<bool>> + Send {
         async { Ok(false) }
     }
@@ -103,11 +120,100 @@ pub trait IBusEngine: Send + Sync {
     }
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Ord, Eq)]
+pub enum IBusPreeditFocusMode {
+    Clear,
+    Commit,
+}
+
+impl From<IBusPreeditFocusMode> for u32 {
+    fn from(value: IBusPreeditFocusMode) -> Self {
+        match value {
+            IBusPreeditFocusMode::Clear => 0,
+            IBusPreeditFocusMode::Commit => 1,
+        }
+    }
+}
+
+/// Methods that the IBus daemon provides for inputs methods to use
+pub trait IBusEngineBackend: IBusEngine + 'static {
+    /// Type this text on behalf of the user
+    fn commit_text(
+        sc: &SignalContext<'_>,
+        text: String,
+    ) -> impl std::future::Future<Output = zbus::Result<()>> + Send;
+    /// Show of hide this lookup table
+    fn update_lookup_table(
+        sc: &SignalContext<'_>,
+        table: &LookupTable,
+        visible: bool,
+    ) -> impl std::future::Future<Output = zbus::Result<()>> + Send;
+    /// Sets the preedit text.
+    ///
+    /// The preedit text is a piece of text displayed in the place where text is to be written, but
+    /// not written yet, in the sense that the underlying application is not aware of it.
+    ///
+    /// cursor_pos is a value from 0 to `text.len()` indicating where the cursor should be
+    /// displayed.
+    fn update_preedit_text(
+        sc: &SignalContext<'_>,
+        text: String,
+        cursor_pos: u32,
+        visible: bool,
+        mode: IBusPreeditFocusMode,
+    ) -> impl std::future::Future<Output = zbus::Result<()>> + Send;
+    /// Sets the auxiliary text
+    ///
+    /// The auxiliary text is a text shown in a floating textbox besides the place where text is
+    /// to be written.
+    fn update_auxiliary_text(
+        sc: &SignalContext<'_>,
+        text: String,
+        visible: bool,
+    ) -> impl std::future::Future<Output = zbus::Result<()>> + Send;
+}
+
+impl<T: IBusEngine + 'static> IBusEngineBackend for T {
+    async fn commit_text(sc: &SignalContext<'_>, text: String) -> zbus::Result<()> {
+        Engine::<Self>::commit_text(sc, make_ibus_text(text)).await
+    }
+    async fn update_lookup_table(
+        sc: &SignalContext<'_>,
+        table: &LookupTable,
+        visible: bool,
+    ) -> zbus::Result<()> {
+        Engine::<Self>::update_lookup_table(sc, table.serialize(), visible).await
+    }
+    async fn update_preedit_text(
+        sc: &SignalContext<'_>,
+        text: String,
+        cursor_pos: u32,
+        visible: bool,
+        mode: IBusPreeditFocusMode,
+    ) -> zbus::Result<()> {
+        Engine::<Self>::update_preedit_text(
+            sc,
+            make_ibus_text(text),
+            cursor_pos,
+            visible,
+            mode.into(),
+        )
+        .await
+    }
+    async fn update_auxiliary_text(
+        sc: &SignalContext<'_>,
+        text: String,
+        visible: bool,
+    ) -> zbus::Result<()> {
+        Engine::<Self>::update_auxiliary_text(sc, make_ibus_text(text), visible).await
+    }
+}
+
 /// D-Bus interface: `org.freedesktop.IBus.Engine`
 ///
 /// <https://ibus.github.io/docs/ibus-1.5/IBusEngine.html>
 #[derive(Debug, Clone)]
-pub struct Engine<T: IBusEngine + 'static> {
+pub(crate) struct Engine<T: IBusEngine + 'static> {
     e: T,
 
     _op: String,
@@ -229,7 +335,16 @@ impl<T: IBusEngine + 'static> Engine<T> {
         keycode: u32,
         state: u32,
     ) -> fdo::Result<bool> {
-        self.e.process_key_event(sc, keyval, keycode, state).await
+        // Note: ibuskeysyms-update.pl indicates that IBUS_KEY_* constants are the same as XK_
+        // constants provided by xkeysym
+        self.e
+            .process_key_event(
+                sc,
+                keyval.into(),
+                keycode.into(),
+                IBusModifierState::new_with_raw_value(state),
+            )
+            .await
     }
 
     async fn set_cursor_location(
@@ -367,7 +482,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
     }
 
     #[zbus(signal)]
-    pub async fn commit_text(sc: &SignalContext<'_>, text: Value<'_>) -> zbus::Result<()>;
+    async fn commit_text(sc: &SignalContext<'_>, text: Value<'_>) -> zbus::Result<()>;
 
     // 忽略 (用户界面相关)
     #[zbus(signal)]
@@ -389,7 +504,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
 
     // (UI)
     #[zbus(signal)]
-    pub async fn update_lookup_table(
+    async fn update_lookup_table(
         sc: &SignalContext<'_>,
         table: Value<'_>,
         visible: bool,
