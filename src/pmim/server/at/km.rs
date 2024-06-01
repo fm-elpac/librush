@@ -211,7 +211,7 @@ impl Km {
                     }
                 }
                 // `A` ~ `Z`
-                key::A..=key::A => {
+                key::A..=key::Z => {
                     捕捉 = true;
                     // 忽略按键
                 }

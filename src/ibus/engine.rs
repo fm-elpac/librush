@@ -9,7 +9,7 @@ use zbus::{fdo, interface, zvariant::Value, Connection, SignalContext};
 
 use super::{ibus_serde::make_ibus_text, IBusModifierState, LookupTable};
 
-/// Implement this trait to implement an input method
+/// Implement this trait to implement an input method.
 ///
 /// Your implementation can use the methods of the [`IBusEngineBackend`]
 /// to display text to the user.
@@ -142,13 +142,15 @@ pub trait IBusEngineBackend: IBusEngine + 'static {
         sc: &SignalContext<'_>,
         text: String,
     ) -> impl std::future::Future<Output = zbus::Result<()>> + Send;
-    /// Show of hide this lookup table
+
+    /// (UI) Show of hide this lookup table
     fn update_lookup_table(
         sc: &SignalContext<'_>,
         table: &LookupTable,
         visible: bool,
     ) -> impl std::future::Future<Output = zbus::Result<()>> + Send;
-    /// Sets the preedit text.
+
+    /// (UI) Sets the preedit text.
     ///
     /// The preedit text is a piece of text displayed in the place where text is to be written, but
     /// not written yet, in the sense that the underlying application is not aware of it.
@@ -162,7 +164,8 @@ pub trait IBusEngineBackend: IBusEngine + 'static {
         visible: bool,
         mode: IBusPreeditFocusMode,
     ) -> impl std::future::Future<Output = zbus::Result<()>> + Send;
-    /// Sets the auxiliary text
+
+    /// (UI) Sets the auxiliary text
     ///
     /// The auxiliary text is a text shown in a floating textbox besides the place where text is
     /// to be written.
@@ -177,6 +180,7 @@ impl<T: IBusEngine + 'static> IBusEngineBackend for T {
     async fn commit_text(sc: &SignalContext<'_>, text: String) -> zbus::Result<()> {
         Engine::<Self>::commit_text(sc, make_ibus_text(text)).await
     }
+
     async fn update_lookup_table(
         sc: &SignalContext<'_>,
         table: &LookupTable,
@@ -184,6 +188,7 @@ impl<T: IBusEngine + 'static> IBusEngineBackend for T {
     ) -> zbus::Result<()> {
         Engine::<Self>::update_lookup_table(sc, table.serialize(), visible).await
     }
+
     async fn update_preedit_text(
         sc: &SignalContext<'_>,
         text: String,
@@ -200,6 +205,7 @@ impl<T: IBusEngine + 'static> IBusEngineBackend for T {
         )
         .await
     }
+
     async fn update_auxiliary_text(
         sc: &SignalContext<'_>,
         text: String,
@@ -484,7 +490,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
     #[zbus(signal)]
     async fn commit_text(sc: &SignalContext<'_>, text: Value<'_>) -> zbus::Result<()>;
 
-    // 忽略 (用户界面相关)
+    // (UI)
     #[zbus(signal)]
     async fn update_preedit_text(
         sc: &SignalContext<'_>,
@@ -494,7 +500,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
         mode: u32,
     ) -> zbus::Result<()>;
 
-    // 忽略 (用户界面相关)
+    // (UI)
     #[zbus(signal)]
     async fn update_auxiliary_text(
         sc: &SignalContext<'_>,
