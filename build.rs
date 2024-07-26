@@ -2,15 +2,20 @@ use std::error::Error;
 use std::path::PathBuf;
 
 use built;
-use vergen::EmitBuilder;
+use vergen_gitcl::{BuildBuilder, Emitter, GitclBuilder};
 
 fn main() -> Result<(), Box<dyn Error>> {
     // 每次编译都重新运行 `build.rs`
-    EmitBuilder::builder()
-        .all_build()
-        .git_describe(true, false, None)
-        .git_sha(false)
+    Emitter::default()
+        .add_instructions(&BuildBuilder::all_build()?)?
+        .add_instructions(
+            &GitclBuilder::default()
+                .describe(true, false, None)
+                .sha(false)
+                .build()?,
+        )?
         .emit()?;
+
     // `.git/index`
     match PathBuf::from("./.git/index").canonicalize() {
         Ok(p) => {
