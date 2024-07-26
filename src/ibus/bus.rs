@@ -2,7 +2,7 @@
 use std::error::Error;
 use std::marker::PhantomData;
 
-use log::debug;
+use pm_bin::log::debug;
 use zbus::Connection;
 
 use super::{IBusEngine, IBusFactory};

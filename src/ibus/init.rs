@@ -1,7 +1,7 @@
 //! ibus 相关的初始化
 use std::error::Error;
 
-use log::debug;
+use pm_bin::log::debug;
 use zbus::{names::WellKnownName, Connection, ConnectionBuilder};
 
 use super::IBusErr;

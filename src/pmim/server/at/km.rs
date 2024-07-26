@@ -1,5 +1,5 @@
 //! 按键管理器
-use log::debug;
+use pm_bin::log::debug;
 use xkeysym::key;
 
 use crate::ibus::IBusModifierState;

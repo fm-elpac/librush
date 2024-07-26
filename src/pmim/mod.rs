@@ -4,7 +4,7 @@
 use std::error::Error;
 use std::process::Command;
 
-use log::{debug, info};
+use pm_bin::log::{debug, info};
 use tokio::{
     runtime::Runtime,
     time::{sleep, Duration},

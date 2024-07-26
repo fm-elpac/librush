@@ -3,7 +3,7 @@ use std::error::Error;
 use std::future::Future;
 use std::marker::Send;
 
-use log::info;
+use pm_bin::log::info;
 use xkeysym::{KeyCode, Keysym};
 use zbus::{fdo, interface, zvariant::Value, Connection, SignalContext};
 

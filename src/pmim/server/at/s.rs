@@ -1,5 +1,5 @@
 //! `AtS`: 给 pmim-server 发送消息的任务
-use log::{debug, error, info};
+use pm_bin::log::{debug, error, info};
 use std::env;
 use std::error::Error;
 use tokio::{
