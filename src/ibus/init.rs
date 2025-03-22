@@ -2,12 +2,12 @@
 use std::error::Error;
 
 use pm_bin::log::debug;
-use zbus::{names::WellKnownName, Connection, ConnectionBuilder};
+use zbus::{Connection, connection::Builder, names::WellKnownName};
 
 use super::IBusErr;
 
 pub async fn 连接ibus(addr: String) -> Result<Connection, Box<dyn Error>> {
-    let c = ConnectionBuilder::address(addr.as_str())?.build().await?;
+    let c = Builder::address(addr.as_str())?.build().await?;
 
     // ibus 初始化: 获取 unique_name
     // 源文件: `ibus/src/ibusbus.c`

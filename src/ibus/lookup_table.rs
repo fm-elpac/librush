@@ -66,7 +66,12 @@ impl LookupTable {
     }
 
     pub(crate) fn serialize(&self) -> Value<'static> {
-        let special = Array::new(Signature::from_str_unchecked("{sv}"));
+        // {sv}
+        let sig = Signature::Dict {
+            key: Signature::Str.into(),
+            value: Signature::Variant.into(),
+        };
+        let special = Array::new(&sig);
         let candidates: Array = self
             .candidates
             .iter()

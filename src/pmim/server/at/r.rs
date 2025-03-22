@@ -1,6 +1,6 @@
 //! `AtR`: 从 pmim-server 接收消息 (中转) 的任务
 use tokio::sync::mpsc;
-use zbus::SignalContext;
+use zbus::object_server::SignalEmitter;
 
 use super::super::super::engine::PmimEngine;
 use super::super::m::{Mk, Mr};
@@ -9,8 +9,8 @@ use crate::ibus::IBusEngineBackend;
 async fn 任务(mut r: mpsc::Receiver<Mr>) {
     // 按键管理器 消息发送端
     let mut k: Option<mpsc::Sender<Mk>> = None;
-    // SignalContext
-    let mut sc: Option<SignalContext<'static>> = None;
+    // SignalEmitter
+    let mut se: Option<SignalEmitter<'static>> = None;
 
     // 不停的接收消息
     loop {
@@ -18,9 +18,9 @@ async fn 任务(mut r: mpsc::Receiver<Mr>) {
             Some(m) => match m {
                 // 提交文本 (CommitText)
                 Mr::T(t) => {
-                    if let Some(sc) = &sc {
+                    if let Some(se) = &se {
                         // 忽略错误
-                        let _ = PmimEngine::commit_text(sc, t.0).await;
+                        let _ = PmimEngine::commit_text(se, t.0).await;
                     }
                     // 忽略
                 }
@@ -33,8 +33,8 @@ async fn 任务(mut r: mpsc::Receiver<Mr>) {
                     // 忽略
                 }
                 // 更新 SignalContext
-                Mr::SC(x) => {
-                    sc = Some(x);
+                Mr::SE(x) => {
+                    se = Some(x);
                 }
                 // 更新 按键管理器 消息发送端
                 Mr::K(x) => {

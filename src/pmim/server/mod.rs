@@ -1,7 +1,7 @@
 //! pmim-server 接口 (unix socket)
 use std::error::Error;
 use tokio::sync::{mpsc, oneshot};
-use zbus::{fdo, SignalContext};
+use zbus::{ObjectServer, fdo, object_server::SignalEmitter};
 
 mod at;
 mod m;
@@ -21,10 +21,10 @@ impl Pmims {
         Self { s, k, r }
     }
 
-    async fn set_sc(&mut self, sc: SignalContext<'_>) {
+    async fn set_se(&mut self, se: SignalEmitter<'_>) {
         // TODO 更好的错误处理
         // 忽略错误
-        let _ = self.r.send(Mr::SC(sc.to_owned())).await;
+        let _ = self.r.send(Mr::SE(se.to_owned())).await;
     }
 
     /// 发送 `Ms` 消息
@@ -44,12 +44,13 @@ impl Pmims {
 
     pub async fn process_key_event(
         &mut self,
-        sc: SignalContext<'_>,
+        se: SignalEmitter<'_>,
+        _server: &ObjectServer,
         keyval: u32,
         keycode: u32,
         state: u32,
     ) -> fdo::Result<bool> {
-        self.set_sc(sc).await;
+        self.set_se(se).await;
         self.send(Ms::K(MsK::new(keyval, keycode, state))).await?;
 
         let mut 捕捉 = false;
@@ -67,42 +68,63 @@ impl Pmims {
 
     pub async fn set_cursor_location(
         &mut self,
-        sc: SignalContext<'_>,
+        se: SignalEmitter<'_>,
+        _server: &ObjectServer,
         x: i32,
         y: i32,
         w: i32,
         h: i32,
     ) -> fdo::Result<()> {
-        self.set_sc(sc).await;
+        self.set_se(se).await;
         self.send(Ms::C(MsC::new(x, y, w, h))).await
     }
 
-    pub async fn focus_in(&mut self, sc: SignalContext<'_>) -> fdo::Result<()> {
-        self.set_sc(sc).await;
+    pub async fn focus_in(
+        &mut self,
+        se: SignalEmitter<'_>,
+        _server: &ObjectServer,
+    ) -> fdo::Result<()> {
+        self.set_se(se).await;
         self.send_k(Mk::FocusIn).await;
         self.send(Ms::S(MsS("focus_in".to_string()))).await
     }
 
-    pub async fn focus_out(&mut self, sc: SignalContext<'_>) -> fdo::Result<()> {
-        self.set_sc(sc).await;
+    pub async fn focus_out(
+        &mut self,
+        se: SignalEmitter<'_>,
+        _server: &ObjectServer,
+    ) -> fdo::Result<()> {
+        self.set_se(se).await;
         self.send_k(Mk::FocusOut).await;
         self.send(Ms::S(MsS("focus_out".to_string()))).await
     }
 
-    pub async fn reset(&mut self, sc: SignalContext<'_>) -> fdo::Result<()> {
-        self.set_sc(sc).await;
+    pub async fn reset(
+        &mut self,
+        se: SignalEmitter<'_>,
+        _server: &ObjectServer,
+    ) -> fdo::Result<()> {
+        self.set_se(se).await;
         self.send_k(Mk::Reset).await;
         self.send(Ms::S(MsS("reset".to_string()))).await
     }
 
-    pub async fn enable(&mut self, sc: SignalContext<'_>) -> fdo::Result<()> {
-        self.set_sc(sc).await;
+    pub async fn enable(
+        &mut self,
+        se: SignalEmitter<'_>,
+        _server: &ObjectServer,
+    ) -> fdo::Result<()> {
+        self.set_se(se).await;
         self.send_k(Mk::Enable).await;
         self.send(Ms::S(MsS("enable".to_string()))).await
     }
 
-    pub async fn disable(&mut self, sc: SignalContext<'_>) -> fdo::Result<()> {
-        self.set_sc(sc).await;
+    pub async fn disable(
+        &mut self,
+        se: SignalEmitter<'_>,
+        _server: &ObjectServer,
+    ) -> fdo::Result<()> {
+        self.set_se(se).await;
         self.send_k(Mk::Disable).await;
         self.send(Ms::S(MsS("disable".to_string()))).await
     }

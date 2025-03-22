@@ -5,9 +5,11 @@ use std::marker::Send;
 
 use pm_bin::log::info;
 use xkeysym::{KeyCode, Keysym};
-use zbus::{fdo, interface, zvariant::Value, Connection, SignalContext};
+use zbus::{
+    Connection, ObjectServer, fdo, interface, object_server::SignalEmitter, zvariant::Value,
+};
 
-use super::{ibus_serde::make_ibus_text, IBusModifierState, LookupTable};
+use super::{IBusModifierState, LookupTable, ibus_serde::make_ibus_text};
 
 /// Implement this trait to implement an input method.
 ///
@@ -28,7 +30,8 @@ pub trait IBusEngine: Send + Sync {
     /// have it.
     fn process_key_event(
         &mut self,
-        _sc: SignalContext<'_>,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
         _keyval: Keysym,
         _keycode: KeyCode,
         _state: IBusModifierState,
@@ -39,7 +42,8 @@ pub trait IBusEngine: Send + Sync {
     /// 设置光标位置
     fn set_cursor_location(
         &mut self,
-        _sc: SignalContext<'_>,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
         _x: i32,
         _y: i32,
         _w: i32,
@@ -49,30 +53,47 @@ pub trait IBusEngine: Send + Sync {
     }
 
     /// 获得焦点
-    fn focus_in(&mut self, _sc: SignalContext<'_>) -> impl Future<Output = fdo::Result<()>> + Send {
+    fn focus_in(
+        &mut self,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
+    ) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
 
     /// 失去焦点
     fn focus_out(
         &mut self,
-        _sc: SignalContext<'_>,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
     ) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
 
     /// 重置
-    fn reset(&mut self, _sc: SignalContext<'_>) -> impl Future<Output = fdo::Result<()>> + Send {
+    fn reset(
+        &mut self,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
+    ) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
 
     /// 启用
-    fn enable(&mut self, _sc: SignalContext<'_>) -> impl Future<Output = fdo::Result<()>> + Send {
+    fn enable(
+        &mut self,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
+    ) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
 
     /// 禁用
-    fn disable(&mut self, _sc: SignalContext<'_>) -> impl Future<Output = fdo::Result<()>> + Send {
+    fn disable(
+        &mut self,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
+    ) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
 
@@ -82,7 +103,8 @@ pub trait IBusEngine: Send + Sync {
     /// lookup table
     fn candidate_clicked(
         &mut self,
-        _sc: SignalContext<'_>,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
         _index: u32,
         _button: u32,
         _state: u32,
@@ -91,14 +113,19 @@ pub trait IBusEngine: Send + Sync {
     }
 
     /// (UI) Emitted when the "previous page" button is clicked on a lookup table
-    fn page_up(&mut self, _sc: SignalContext<'_>) -> impl Future<Output = fdo::Result<()>> + Send {
+    fn page_up(
+        &mut self,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
+    ) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
 
     /// (UI) Emitted when the "next page" button is clicked on a lookup table
     fn page_down(
         &mut self,
-        _sc: SignalContext<'_>,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
     ) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
@@ -106,7 +133,8 @@ pub trait IBusEngine: Send + Sync {
     /// (UI) Emmitted when the user scrolls up (with the mouse wheel) on a lookup table
     fn cursor_up(
         &mut self,
-        _sc: SignalContext<'_>,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
     ) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
@@ -114,7 +142,8 @@ pub trait IBusEngine: Send + Sync {
     /// (UI) Emmitted when the user scrolls down (with the mouse wheel) on a lookup table
     fn cursor_down(
         &mut self,
-        _sc: SignalContext<'_>,
+        _se: SignalEmitter<'_>,
+        _server: &ObjectServer,
     ) -> impl Future<Output = fdo::Result<()>> + Send {
         async { Ok(()) }
     }
@@ -139,13 +168,13 @@ impl From<IBusPreeditFocusMode> for u32 {
 pub trait IBusEngineBackend: IBusEngine + 'static {
     /// Type this text on behalf of the user
     fn commit_text(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         text: String,
     ) -> impl std::future::Future<Output = zbus::Result<()>> + Send;
 
     /// (UI) Show of hide this lookup table
     fn update_lookup_table(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         table: &LookupTable,
         visible: bool,
     ) -> impl std::future::Future<Output = zbus::Result<()>> + Send;
@@ -158,7 +187,7 @@ pub trait IBusEngineBackend: IBusEngine + 'static {
     /// cursor_pos is a value from 0 to `text.len()` indicating where the cursor should be
     /// displayed.
     fn update_preedit_text(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         text: String,
         cursor_pos: u32,
         visible: bool,
@@ -170,34 +199,34 @@ pub trait IBusEngineBackend: IBusEngine + 'static {
     /// The auxiliary text is a text shown in a floating textbox besides the place where text is
     /// to be written.
     fn update_auxiliary_text(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         text: String,
         visible: bool,
     ) -> impl std::future::Future<Output = zbus::Result<()>> + Send;
 }
 
 impl<T: IBusEngine + 'static> IBusEngineBackend for T {
-    async fn commit_text(sc: &SignalContext<'_>, text: String) -> zbus::Result<()> {
-        Engine::<Self>::commit_text(sc, make_ibus_text(text)).await
+    async fn commit_text(se: &SignalEmitter<'_>, text: String) -> zbus::Result<()> {
+        Engine::<Self>::commit_text(se, make_ibus_text(text)).await
     }
 
     async fn update_lookup_table(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         table: &LookupTable,
         visible: bool,
     ) -> zbus::Result<()> {
-        Engine::<Self>::update_lookup_table(sc, table.serialize(), visible).await
+        Engine::<Self>::update_lookup_table(se, table.serialize(), visible).await
     }
 
     async fn update_preedit_text(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         text: String,
         cursor_pos: u32,
         visible: bool,
         mode: IBusPreeditFocusMode,
     ) -> zbus::Result<()> {
         Engine::<Self>::update_preedit_text(
-            sc,
+            se,
             make_ibus_text(text),
             cursor_pos,
             visible,
@@ -207,11 +236,11 @@ impl<T: IBusEngine + 'static> IBusEngineBackend for T {
     }
 
     async fn update_auxiliary_text(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         text: String,
         visible: bool,
     ) -> zbus::Result<()> {
-        Engine::<Self>::update_auxiliary_text(sc, make_ibus_text(text), visible).await
+        Engine::<Self>::update_auxiliary_text(se, make_ibus_text(text), visible).await
     }
 }
 
@@ -336,7 +365,8 @@ pub(crate) struct Engine<T: IBusEngine + 'static> {
 impl<T: IBusEngine + 'static> Engine<T> {
     async fn process_key_event(
         &mut self,
-        #[zbus(signal_context)] sc: SignalContext<'_>,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
         keyval: u32,
         keycode: u32,
         state: u32,
@@ -345,7 +375,8 @@ impl<T: IBusEngine + 'static> Engine<T> {
         // constants provided by xkeysym
         self.e
             .process_key_event(
-                sc,
+                se,
+                server,
                 keyval.into(),
                 keycode.into(),
                 IBusModifierState::new_with_raw_value(state),
@@ -355,13 +386,14 @@ impl<T: IBusEngine + 'static> Engine<T> {
 
     async fn set_cursor_location(
         &mut self,
-        #[zbus(signal_context)] sc: SignalContext<'_>,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
         x: i32,
         y: i32,
         w: i32,
         h: i32,
     ) -> fdo::Result<()> {
-        self.e.set_cursor_location(sc, x, y, w, h).await
+        self.e.set_cursor_location(se, server, x, y, w, h).await
     }
 
     // 忽略
@@ -397,16 +429,23 @@ impl<T: IBusEngine + 'static> Engine<T> {
     // (UI)
     async fn candidate_clicked(
         &mut self,
-        #[zbus(signal_context)] sc: SignalContext<'_>,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
         index: u32,
         button: u32,
         state: u32,
     ) -> fdo::Result<()> {
-        self.e.candidate_clicked(sc, index, button, state).await
+        self.e
+            .candidate_clicked(se, server, index, button, state)
+            .await
     }
 
-    async fn focus_in(&mut self, #[zbus(signal_context)] sc: SignalContext<'_>) -> fdo::Result<()> {
-        self.e.focus_in(sc).await
+    async fn focus_in(
+        &mut self,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
+    ) -> fdo::Result<()> {
+        self.e.focus_in(se, server).await
     }
 
     fn focus_in_id(&mut self, _object_path: String, _client: String) -> fdo::Result<()> {
@@ -416,9 +455,10 @@ impl<T: IBusEngine + 'static> Engine<T> {
 
     async fn focus_out(
         &mut self,
-        #[zbus(signal_context)] sc: SignalContext<'_>,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
     ) -> fdo::Result<()> {
-        self.e.focus_out(sc).await
+        self.e.focus_out(se, server).await
     }
 
     fn focus_out_id(&mut self, _object_path: String) -> fdo::Result<()> {
@@ -426,45 +466,64 @@ impl<T: IBusEngine + 'static> Engine<T> {
         Ok(())
     }
 
-    async fn reset(&mut self, #[zbus(signal_context)] sc: SignalContext<'_>) -> fdo::Result<()> {
-        self.e.reset(sc).await
+    async fn reset(
+        &mut self,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
+    ) -> fdo::Result<()> {
+        self.e.reset(se, server).await
     }
 
-    async fn enable(&mut self, #[zbus(signal_context)] sc: SignalContext<'_>) -> fdo::Result<()> {
-        self.e.enable(sc).await
+    async fn enable(
+        &mut self,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
+    ) -> fdo::Result<()> {
+        self.e.enable(se, server).await
     }
 
-    async fn disable(&mut self, #[zbus(signal_context)] sc: SignalContext<'_>) -> fdo::Result<()> {
-        self.e.disable(sc).await
+    async fn disable(
+        &mut self,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
+    ) -> fdo::Result<()> {
+        self.e.disable(se, server).await
     }
 
     /// (UI) Emitted when the page-up button is pressed.
-    async fn page_up(&mut self, #[zbus(signal_context)] sc: SignalContext<'_>) -> fdo::Result<()> {
-        self.e.page_up(sc).await
+    async fn page_up(
+        &mut self,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
+    ) -> fdo::Result<()> {
+        self.e.page_up(se, server).await
     }
 
     /// (UI) Emitted when the page-down button is pressed
     async fn page_down(
         &mut self,
-        #[zbus(signal_context)] sc: SignalContext<'_>,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
     ) -> fdo::Result<()> {
-        self.e.page_down(sc).await
+        self.e.page_down(se, server).await
     }
 
     /// (UI) Emitted when the up cursor button is pressed.
     async fn cursor_up(
         &mut self,
-        #[zbus(signal_context)] sc: SignalContext<'_>,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
     ) -> fdo::Result<()> {
-        self.e.cursor_up(sc).await
+        self.e.cursor_up(se, server).await
     }
 
     /// (UI) Emitted when the down cursor button is pressed
     async fn cursor_down(
         &mut self,
-        #[zbus(signal_context)] sc: SignalContext<'_>,
+        #[zbus(signal_emitter)] se: SignalEmitter<'_>,
+        #[zbus(object_server)] server: &ObjectServer,
     ) -> fdo::Result<()> {
-        self.e.cursor_down(sc).await
+        self.e.cursor_down(se, server).await
     }
 
     // 忽略
@@ -488,12 +547,12 @@ impl<T: IBusEngine + 'static> Engine<T> {
     }
 
     #[zbus(signal)]
-    async fn commit_text(sc: &SignalContext<'_>, text: Value<'_>) -> zbus::Result<()>;
+    async fn commit_text(se: &SignalEmitter<'_>, text: Value<'_>) -> zbus::Result<()>;
 
     // (UI)
     #[zbus(signal)]
     async fn update_preedit_text(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         text: Value<'_>,
         cursor_pos: u32,
         visible: bool,
@@ -503,7 +562,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
     // (UI)
     #[zbus(signal)]
     async fn update_auxiliary_text(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         text: Value<'_>,
         visible: bool,
     ) -> zbus::Result<()>;
@@ -511,22 +570,22 @@ impl<T: IBusEngine + 'static> Engine<T> {
     // (UI)
     #[zbus(signal)]
     async fn update_lookup_table(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         table: Value<'_>,
         visible: bool,
     ) -> zbus::Result<()>;
 
     // 忽略 (用户界面相关)
     #[zbus(signal)]
-    async fn register_properties(sc: &SignalContext<'_>, props: Value<'_>) -> zbus::Result<()>;
+    async fn register_properties(se: &SignalEmitter<'_>, props: Value<'_>) -> zbus::Result<()>;
 
     // 忽略 (用户界面相关)
     #[zbus(signal)]
-    async fn update_property(sc: &SignalContext<'_>, prop: Value<'_>) -> zbus::Result<()>;
+    async fn update_property(se: &SignalEmitter<'_>, prop: Value<'_>) -> zbus::Result<()>;
 
     #[zbus(signal)]
     pub async fn forward_key_event(
-        sc: &SignalContext<'_>,
+        se: &SignalEmitter<'_>,
         keyval: u32,
         keycode: u32,
         state: u32,
@@ -534,7 +593,7 @@ impl<T: IBusEngine + 'static> Engine<T> {
 
     // 忽略 (用户界面相关)
     #[zbus(signal)]
-    async fn panel_extension(sc: &SignalContext<'_>, data: Value<'_>) -> zbus::Result<()>;
+    async fn panel_extension(se: &SignalEmitter<'_>, data: Value<'_>) -> zbus::Result<()>;
 
     #[zbus(property)]
     fn content_type(&self) -> (u32, u32) {

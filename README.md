@@ -4,7 +4,6 @@
 镜像 (mirror):
 + <https://bitbucket.org/fm-elpac/librush/>
 + <https://codeberg.org/fm-elpac/librush>
-+ <https://notabug.org/fm-elpac/librush>
 + <https://gitlab.com/fm-elpac/librush>
 
 ----
@@ -96,7 +95,7 @@ Update all dependencies, and rebuild:
 
 Current version number of important dependencies:
 
-- rustc 1.80.0 (051478957 2024-07-21)
+- rustc 1.85.1 (4eb161250 2025-03-15)
 
   <https://github.com/rust-lang/rust>
 

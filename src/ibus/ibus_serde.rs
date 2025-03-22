@@ -33,13 +33,14 @@ use zbus::zvariant::{Array, Signature, Structure, Value};
 pub fn make_ibus_text(text: String) -> Value<'static> {
     // 构造 `@a{sv}`
     fn a1() -> Array<'static> {
-        let sig = Signature::from_str_unchecked("{sv}");
-        Array::new(sig)
+        Array::new(&Signature::Dict {
+            key: Signature::Str.into(),
+            value: Signature::Variant.into(),
+        })
     }
     // 构造 `@av`
     fn a2() -> Array<'static> {
-        let sig = Signature::from_str_unchecked("v");
-        Array::new(sig)
+        Array::new(&Signature::Variant)
     }
 
     // 构造内部的 variant  struct

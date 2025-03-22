@@ -1,8 +1,8 @@
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc,
+    atomic::{AtomicBool, Ordering},
 };
-use tokio::sync::mpsc::{error::SendError, Sender};
+use tokio::sync::mpsc::{Sender, error::SendError};
 
 /// 根据连接状态发送消息
 #[derive(Debug, Clone)]

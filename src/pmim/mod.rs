@@ -7,11 +7,11 @@ use std::process::Command;
 use pm_bin::log::{debug, info};
 use tokio::{
     runtime::Runtime,
-    time::{sleep, Duration},
+    time::{Duration, sleep},
 };
 
-use crate::ibus::get_ibus_addr;
 use crate::ibus::IBus;
+use crate::ibus::get_ibus_addr;
 
 pub mod engine;
 mod server;

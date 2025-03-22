@@ -4,9 +4,9 @@ use std::env;
 use std::error::Error;
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter},
-    net::{unix::OwnedReadHalf, UnixStream},
+    net::{UnixStream, unix::OwnedReadHalf},
     sync::mpsc,
-    time::{sleep, Duration},
+    time::{Duration, sleep},
 };
 
 use super::super::m::{MSender, Mr, Ms, MsS};

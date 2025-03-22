@@ -3,10 +3,10 @@ use std::error::Error;
 use std::marker::PhantomData;
 
 use pm_bin::log::debug;
-use zbus::{fdo, interface, zvariant::ObjectPath, Connection};
+use zbus::{Connection, fdo, interface, zvariant::ObjectPath};
 
-use super::engine::Engine;
 use super::IBusEngine;
+use super::engine::Engine;
 
 /// Implement this trait to create engine
 pub trait IBusFactory<T: IBusEngine>: Send + Sync {

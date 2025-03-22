@@ -1,5 +1,5 @@
 Name:       ibrus
-Version:    0.1.0
+Version:    0.2.0
 Release:    1%{?dist}
 Summary:    ibus module for pmim (a Chinese pinyin input method)
 License:    LGPL-2.1-or-later OR GPL-3.0-or-later

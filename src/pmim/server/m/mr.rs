@@ -1,17 +1,17 @@
 use tokio::sync::mpsc;
-use zbus::SignalContext;
+use zbus::object_server::SignalEmitter;
 
 use super::Mk;
 
-/// 消息: ibrus (SignalContext) <- pmim-server
+/// 消息: ibrus (SignalEmitter) <- pmim-server
 #[derive(Debug, Clone)]
 pub enum Mr {
     /// `t`: 提交文本 (CommitText)
     T(MrT),
     /// `f`: 输入反馈
     F(MrF),
-    /// SignalContext
-    SC(SignalContext<'static>),
+    /// SignalEmitter
+    SE(SignalEmitter<'static>),
     /// 按键管理器 消息发送端
     K(mpsc::Sender<Mk>),
 }
