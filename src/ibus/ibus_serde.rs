@@ -145,3 +145,14 @@ impl IBusModifierState {
         !self.is_keyup()
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn ibus_text_zvariant_signature() {
+        let v = make_ibus_text("test".into());
+        assert_eq!(v.value_signature(), "(sa{sv}sv)");
+    }
+}
