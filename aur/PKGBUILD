@@ -1,6 +1,6 @@
 # Maintainer: secext2022 <secext2022 at outlook dot com>
 pkgname=librush-bin
-pkgver=0.2.0
+pkgver=0.2.1
 pkgrel=1
 # https://github.com/fm-elpac/pmim-ibus
 pkgdesc="ibus module for pmim (a Chinese pinyin input method)"

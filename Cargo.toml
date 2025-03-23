@@ -1,6 +1,6 @@
 [package]
 name = "librush"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 license = "LGPL-2.1-or-later OR GPL-3.0-or-later"
 

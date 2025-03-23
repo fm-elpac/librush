@@ -1,4 +1,6 @@
-use zbus::zvariant::{Array, Signature, Structure, Value};
+use std::collections::HashMap;
+
+use zbus::zvariant::{Array, Structure, Value};
 
 use super::ibus_serde::make_ibus_text;
 
@@ -66,12 +68,7 @@ impl LookupTable {
     }
 
     pub(crate) fn serialize(&self) -> Value<'static> {
-        // {sv}
-        let sig = Signature::Dict {
-            key: Signature::Str.into(),
-            value: Signature::Variant.into(),
-        };
-        let special = Array::new(&sig);
+        let special = HashMap::<String, Value<'static>>::new();
         let candidates: Array = self
             .candidates
             .iter()
@@ -88,6 +85,7 @@ impl LookupTable {
             .into();
         let structure = Structure::from((
             "IBusLookupTable",
+            // a{sv}
             special,
             self.page_size,
             self.cursor_pos,

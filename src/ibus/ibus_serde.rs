@@ -1,6 +1,8 @@
+use std::collections::HashMap;
+
 use arbitrary_int::u11;
 use bitbybit::bitfield;
-use zbus::zvariant::{Array, Signature, Structure, Value};
+use zbus::zvariant::{Structure, Value};
 
 // 源文件: `ibus/src/ibustext.c`
 // IBusText
@@ -31,23 +33,22 @@ use zbus::zvariant::{Array, Signature, Structure, Value};
 
 /// `IBusText`: serialize data as ibus format
 pub fn make_ibus_text(text: String) -> Value<'static> {
-    // 构造 `@a{sv}`
-    fn a1() -> Array<'static> {
-        Array::new(&Signature::Dict {
-            key: Signature::Str.into(),
-            value: Signature::Variant.into(),
-        })
-    }
-    // 构造 `@av`
-    fn a2() -> Array<'static> {
-        Array::new(&Signature::Variant)
-    }
-
     // 构造内部的 variant  struct
-    let st1 = Structure::from(("IBusAttrList", a1(), a2()));
+    // (sa{sv}av)
+    let st1 = Structure::from((
+        "IBusAttrList",
+        HashMap::<String, Value<'static>>::new(),
+        Vec::<Value<'static>>::new(),
+    ));
 
     // 构造外部的 variant  struct
-    let st2 = Structure::from(("IBusText", a1(), text, Value::new(st1)));
+    // (sa{sv}sv)
+    let st2 = Structure::from((
+        "IBusText",
+        HashMap::<String, Value<'static>>::new(),
+        text,
+        Value::new(st1),
+    ));
 
     Value::new(st2)
 }
