@@ -44,7 +44,7 @@ impl<T: IBusEngine, U: IBusFactory<T>> Factory<T, U> {
 #[interface(name = "org.freedesktop.IBus.Factory")]
 impl<T: IBusEngine + 'static, U: IBusFactory<T> + 'static> Factory<T, U> {
     #[zbus(name = "CreateEngine")]
-    async fn create_engine(&mut self, name: String) -> fdo::Result<ObjectPath> {
+    async fn create_engine(&mut self, name: String) -> fdo::Result<ObjectPath<'_>> {
         debug!("CreateEngine");
 
         let e = self

@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - run: cargo fmt --check
 
@@ -30,7 +30,7 @@ jobs:
     - run: |
         tar --zstd -cvf librush_release_x86_64-unknown-linux-gnu.tar.zst \
         target/release/ibrus
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
         name: librush_release_x86_64-unknown-linux-gnu
         path: librush_release_x86_64-unknown-linux-gnu.tar.zst
@@ -54,24 +54,24 @@ jobs:
     - run: |
         tar --zstd -cvf librush_release_aarch64-unknown-linux-gnu.tar.zst \
         target/aarch64-unknown-linux-gnu/release/ibrus
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
         name: librush_release_aarch64-unknown-linux-gnu
         path: librush_release_aarch64-unknown-linux-gnu.tar.zst
 
     # build rpm (fedora toolbox rpm-build)
     - run: sudo apt-get -y install podman-toolbox
-    # Fedora 41
-    - run: toolbox create -y -d fedora -r 41
+    # Fedora 43
+    - run: toolbox create -y -d fedora -r 43
       env:
         SHELL: /usr/bin/bash
     - run: |
-        toolbox run -c fedora-toolbox-41 \
+        toolbox run -c fedora-toolbox-43 \
         sudo dnf install -y rpm-build rpm-devel rpmdevtools
       env:
         SHELL: /usr/bin/bash
     - run: |
-        toolbox run -c fedora-toolbox-41 \
+        toolbox run -c fedora-toolbox-43 \
         rpmdev-setuptree
       env:
         SHELL: /usr/bin/bash
@@ -82,32 +82,32 @@ jobs:
         cp target/release/ibrus ~/rpmbuild/SOURCES/
     # build rpm
     - run: |
-        toolbox run -c fedora-toolbox-41 \
+        toolbox run -c fedora-toolbox-43 \
         rpmbuild -bb ~/rpmbuild/SPECS/ibrus.spec
       env:
         SHELL: /usr/bin/bash
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
-        name: ibrus-0.2.1-1.fc41.x86_64.rpm
-        path: ~/rpmbuild/RPMS/x86_64/ibrus-0.2.1-1.fc41.x86_64.rpm
+        name: ibrus-0.2.2-1.fc43.x86_64.rpm
+        path: ~/rpmbuild/RPMS/x86_64/ibrus-0.2.2-1.fc43.x86_64.rpm
 
-    # Fedora 40
-    - run: toolbox create -y -d fedora -r 40
+    # Fedora 42
+    - run: toolbox create -y -d fedora -r 42
       env:
         SHELL: /usr/bin/bash
     - run: |
-        toolbox run -c fedora-toolbox-40 \
+        toolbox run -c fedora-toolbox-42 \
         sudo dnf install -y rpm-build rpm-devel rpmdevtools
       env:
         SHELL: /usr/bin/bash
     - run: |
-        toolbox run -c fedora-toolbox-40 \
+        toolbox run -c fedora-toolbox-42 \
         rpmbuild -bb ~/rpmbuild/SPECS/ibrus.spec
       env:
         SHELL: /usr/bin/bash
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v6
       with:
-        name: ibrus-0.2.1-1.fc40.x86_64.rpm
-        path: ~/rpmbuild/RPMS/x86_64/ibrus-0.2.1-1.fc40.x86_64.rpm
+        name: ibrus-0.2.2-1.fc42.x86_64.rpm
+        path: ~/rpmbuild/RPMS/x86_64/ibrus-0.2.2-1.fc42.x86_64.rpm
