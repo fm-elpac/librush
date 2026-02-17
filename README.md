@@ -4,15 +4,14 @@
 镜像 (mirror):
 + <https://bitbucket.org/fm-elpac/librush/>
 + <https://codeberg.org/fm-elpac/librush>
++ <https://notabug.org/fm-elpac/librush>
 
 <!--
-- <https://notabug.org/fm-elpac/librush>
 - <https://framagit.org/fm-elpac/librush>
 -->
 
 - <https://git.disroot.org/fm-elpac/librush>
 - <https://git.pub.solar/fm-elpac/librush>
-
 
 ----
 
