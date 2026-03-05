@@ -5,7 +5,6 @@ GNOME 桌面环境集成了 ibus 输入法框架:
 
 所以在 GNOME 中使用 ibus 输入法是比较方便的.
 
-
 ## 安装
 
 操作系统: ArchLinux
